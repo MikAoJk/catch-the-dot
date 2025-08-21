@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Catch the Dot!</title>
+  <style>
+    body {
+      background: #222;
+      color: #fff;
+      font-family: 'Segoe UI', sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      overflow: hidden;
+    }
+    h1 {
+      margin-top: 24px;
+      font-size: 2.5em;
+      letter-spacing: 2px;
+      color: #ffeb3b;
+      text-shadow: 0 2px 8px #333;
+    }
+    #game-area {
+      position: relative;
+      width: 500px;
+      height: 400px;
+      margin: 36px auto 0 auto;
+      background: #444;
+      border-radius: 24px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.35);
+      overflow: hidden;
+      border: 4px solid #ffeb3b;
+    }
+    #dot {
+      position: absolute;
+      width: 40px;
+      height: 40px;
+      background: radial-gradient(circle, #f44336 60%, #d32f2f 100%);
+      border-radius: 50%;
+      cursor: pointer;
+      box-shadow: 0 4px 16px #d32f2f90;
+      transition: box-shadow 0.2s;
+    }
+    #dot:active {
+      box-shadow: 0 0 0 #d32f2f;
+    }
+    #score, #timer {
+      font-size: 1.4em;
+      margin: 0 16px;
+      display: inline-block;
+    }
+    #start-btn {
+      margin-top: 18px;
+      padding: 10px 36px;
+      font-size: 1.1em;
+      border: none;
+      border-radius: 25px;
+      background: linear-gradient(90deg, #ffeb3b, #f44336);
+      color: #222;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 2px 12px #0003;
+      letter-spacing: 1px;
+      transition: background 0.2s;
+    }
+    #start-btn:hover {
+      background: linear-gradient(90deg, #f44336, #ffeb3b);
+    }
+    #game-over {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: #222c;
+      color: #fff;
+      font-size: 2em;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 99;
+      border-radius: 24px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.5s;
+    }
+    #game-over.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    @media (max-width: 600px) {
+      #game-area {
+        width: 98vw;
+        height: 60vw;
+        min-width: 230px;
+        min-height: 180px;
+        max-width: 100vw;
+        max-height: 80vw;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>Catch the Dot!</h1>
+  <div>
+    <span id="score">Score: 0</span>
+    <span id="timer">Time: 20</span>
+  </div>
+  <div id="game-area">
+    <div id="dot" style="display:none"></div>
+    <div id="game-over">
+      <div id="final-message"></div>
+      <button id="restart-btn" style="margin-top:28px; font-size:1em;">Restart</button>
+    </div>
+  </div>
+  <button id="start-btn">Start Game</button>
+  <script>
+    const dot = document.getElementById('dot');
+    const gameArea = document.getElementById('game-area');
+    const scoreEl = document.getElementById('score');
+    const timerEl = document.getElementById('timer');
+    const startBtn = document.getElementById('start-btn');
+    const gameOver = document.getElementById('game-over');
+    const finalMsg = document.getElementById('final-message');
+    const restartBtn = document.getElementById('restart-btn');
+    
+    let score = 0, time = 20, interval, running = false;
+
+    function randomPos() {
+      const areaRect = gameArea.getBoundingClientRect();
+      const dotSize = dot.offsetWidth;
+      // Use area width/height directly to stay within
+      const maxX = gameArea.clientWidth - dotSize;
+      const maxY = gameArea.clientHeight - dotSize;
+      return {
+        x: Math.floor(Math.random() * maxX),
+        y: Math.floor(Math.random() * maxY)
+      };
+    }
+
+    function moveDot() {
+      const pos = randomPos();
+      dot.style.left = `${pos.x}px`;
+      dot.style.top = `${pos.y}px`;
+    }
+
+    function startGame() {
+      score = 0;
+      time = 20;
+      running = true;
+      scoreEl.textContent = 'Score: 0';
+      timerEl.textContent = 'Time: 20';
+      dot.style.display = 'block';
+      moveDot();
+      dot.style.pointerEvents = 'auto';
+      gameOver.classList.remove('show');
+      startBtn.style.display = 'none';
+      interval = setInterval(() => {
+        time--;
+        timerEl.textContent = 'Time: ' + time;
+        if (time <= 0) endGame();
+      }, 1000);
+    }
+
+    function endGame() {
+      clearInterval(interval);
+      running = false;
+      dot.style.display = 'none';
+      gameOver.classList.add('show');
+      finalMsg.innerHTML = `<div>Game Over!</div><div>Your score: <b>${score}</b></div>`;
+      startBtn.style.display = 'block';
+    }
+
+    dot.addEventListener('click', () => {
+      if (!running) return;
+      score++;
+      scoreEl.textContent = 'Score: ' + score;
+      moveDot();
+    });
+
+    dot.addEventListener('mousedown', e => e.preventDefault());
+
+    startBtn.addEventListener('click', startGame);
+    restartBtn.addEventListener('click', startGame);
+
+    // Optional: move dot if user misses
+    gameArea.addEventListener('click', e => {
+      if (!running) return;
+      if (e.target !== dot) {
+        moveDot();
+        score = Math.max(0, score - 1);
+        scoreEl.textContent = 'Score: ' + score;
+      }
+    });
+  </script>
+</body>
+</html>
