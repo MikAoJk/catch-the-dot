@@ -1,2 +1,2 @@
 # Catch the Dot
-joakim-taule-kartveit.no/catch-the-dot/
+https://joakim-taule-kartveit.no/catch-the-dot/
